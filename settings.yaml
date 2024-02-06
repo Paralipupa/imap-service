@@ -1,4 +1,11 @@
 default:
+  SECRET_KEY: None
+  JWT_AUTH_HEADER_PREFIX: Bearer
+  JWT_REQUIRED_CLAIMS:
+    - exp
+    - iat
+    - jti
+  JWT_VERIFY_SIGNATURE: True
   PAGINATOR:
     PageSize: 50
   LOG_DIR: log

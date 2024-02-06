@@ -1,43 +1,41 @@
-import os
-from flask_httpauth import HTTPBasicAuth, HTTPTokenAuth, MultiAuth
-from werkzeug.security import generate_password_hash, check_password_hash
-from flask_jwt import _jwt_required
-from src import jwt, app
+import jwt
+import logging
+from flask_httpauth import HTTPTokenAuth, MultiAuth
+from jwt.exceptions import InvalidSignatureError, ExpiredSignatureError, DecodeError
+from src import app
 
-### Настройки авторизации
-basic_user = {
-    app.config.BASIC_AUTH.user: generate_password_hash(app.config.BASIC_AUTH.password),
-}
-
-basic_auth = HTTPBasicAuth()
+logger = logging.getLogger(__name__)
+### Настройки авторизации по токену
 token_auth = HTTPTokenAuth()
-multi_auth = MultiAuth(basic_auth, token_auth)
-
-
-@basic_auth.verify_password
-@basic_auth.verify_password
-def verify_password(user, password):
-    if app.config.BASIC_AUTH.user == user and check_password_hash(
-        basic_user[app.config.BASIC_AUTH.user], password
-    ):
-        return {"inn": "", "ogrn": ""}
+multi_auth = MultiAuth(
+    token_auth,
+)
 
 
 @token_auth.verify_token
 def verify_token(token):
     try:
-        data = jwt.jwt_decode_callback(token)
-        if app.debug:
-            logger.info("verify_token: %s", data)
-    except Exception as e:
-        return _jwt_required(app.config["JWT_DEFAULT_REALM"])
+        error_message = ""
+        data = {}
+        data = jwt.decode(
+            token,
+            app.config.SECRET_KEY,
+            algorithms=["HS256"],
+            options={"verify_signature": app.config.JWT_VERIFY_SIGNATURE},
+        )
+    except InvalidSignatureError:
+        error_message = "Invalid signature."
+    except ExpiredSignatureError:
+        error_message = "message", "Token has expired."
+    except DecodeError:
+        error_message = "Token could not be decoded."
+    except Exception as ex:
+        error_message = "message", f"{ex}"
     result = {
-        "user_id": data.get("user_id"),
-        "user_name": data.get("user_name"),
         "ogrn": data.get("ogrn"),
-        "permissions": data.get("permissions"),
+        "inn": data.get("inn"),
+        "error": error_message,
     }
-
     return result
 
 

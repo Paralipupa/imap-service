@@ -7,6 +7,7 @@ import re
 import concurrent.futures
 from pathlib import Path
 from email.header import decode_header
+from flask_restful import abort
 from typing import Tuple, List, Any
 from bs4 import BeautifulSoup, MarkupResemblesLocatorWarning
 from multiprocessing import Manager

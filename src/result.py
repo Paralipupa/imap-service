@@ -13,10 +13,10 @@ class Result:
         )
         self.id: bytes = b"0"
         self.subject: str = ""
-        self.body: str = ""
+        self.body: str = error_message
         self.sender: str = ""
         self.files: list = []
-        self.error_message = error_message
+        self.error: str = error_message
 
     @classmethod
     def hashit(cls, s):

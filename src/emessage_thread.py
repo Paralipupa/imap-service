@@ -233,10 +233,8 @@ def fetch_messages(criteria: str):
                 try:
                     result = future.result()
                     results.append(result)
-                except Exception as exc:
-                    print("%r generated an exception: %s" % (url, exc))
-                else:
-                    print("%r page is %d bytes" % (url, len(result)))
+                except Exception as ex:
+                    results.append(Result(error_message=f"{ex}"))
 
     disconnect()
     return [x for x in results if x] if results else []

@@ -1,17 +1,17 @@
 import logging
 import requests
 from functools import lru_cache
-from .emessage_process import (
-    fetch_messages as f_messages,
-    fetch_message as f_message,
-    fetch_attachments as f_attachments,
-)
-
-# from .emessage_thread import (
+# from .emessage_process import (
 #     fetch_messages as f_messages,
 #     fetch_message as f_message,
 #     fetch_attachments as f_attachments,
 # )
+
+from .emessage_thread import (
+    fetch_messages as f_messages,
+    fetch_message as f_message,
+    fetch_attachments as f_attachments,
+)
 from flask_api import status
 from .helpers import serialize
 from .result import Result
@@ -29,8 +29,6 @@ def fetch_messages(**param):
     соответстующее этому идентификатору
     """
     try:
-        # if not fetch_verify_auth(**param):
-        #     raise AccessDeniedException
         id = param.get("id")
         if id:
             id = bytes(str(id), "utf-8")
@@ -42,10 +40,9 @@ def fetch_messages(**param):
             results = f_messages(search_text)
         return results
     except ConnectionErrorException as ex:
-        logger.error(f"{ex}")
+        return Result(error_message=f"{ex}")
     except Exception as ex:
-        logger.error(f"{ex}")
-    return Result(error_message="error")
+        return Result(error_message=f"{ex}")
 
 
 def fetch_attachments(**param):
@@ -62,21 +59,9 @@ def fetch_attachments(**param):
                 results = f_attachments(id, attachments)
                 return results
     except ConnectionErrorException as ex:
-        logger.error(f"{ex}")
+        return Result(error_message=f"{ex}")
     except Exception as ex:
-        logger.error(f"{ex}")
-    return Result(error_message="error")
-
-
-def fetch_verify_auth(**param):
-    if param["ogrn"]:
-        url = "http://stage1.qqube.ru:7001/identity/get_token/" + param["ogrn"]
-        response = requests.get(
-            url, auth=(app.config.BASIC_AUTH.user, app.config.BASIC_AUTH.password)
-        )
-        if response.status_code == status.HTTP_200_OK:
-            return True
-    return False
+        return Result(error_message=f"{ex}")
 
 
 if __name__ == "__main__":
