@@ -12,12 +12,12 @@ RUN apt-get update && apt-get install -y vim \
 	&& pip install -U pip \
     && pip install gunicorn \
     && pip install pipenv \
-    && pipenv install --system \
-    && apt-get install -y vim
+    && pipenv install --system
+
+COPY . .
 
 RUN chown -R web:web ./
-RUN chmod +x boot.sh
+RUN chmod +x ./boot.sh
 USER web
 
 EXPOSE 5000
-ENTRYPOINT ["./boot.sh"]
