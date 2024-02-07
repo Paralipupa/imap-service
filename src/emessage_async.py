@@ -34,6 +34,7 @@ async def connect_async():
         await imap.select("Inbox")
         return imap
     except Exception as ex:
+        logger.error(f"{ex}")
         raise ConnectionErrorException(ex)
 
 
@@ -120,7 +121,7 @@ def get_subject(msg) -> str:
             if isinstance(subject, bytes):
                 subject = subject.decode()
     except Exception as ex:
-        logger.warning(f"{ex}")
+        logger.error(f"{ex}")
     finally:
         return subject
 
@@ -152,7 +153,7 @@ def get_body_text(part) -> str:
         contents = payload
     soup = BeautifulSoup(contents, "html.parser")
     text = re.sub(r"(\n)+", r"\n", soup.text)
-    return text.replace("\n", " ")
+    return text
 
 
 def get_file_name(part):

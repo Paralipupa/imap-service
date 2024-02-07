@@ -38,6 +38,7 @@ def connect():
         imap.select("Inbox")
         return imap
     except Exception as ex:
+        logger.error(f"{ex}")
         raise ConnectionErrorException(ex)
 
 
@@ -110,6 +111,7 @@ def get_message_data(id: bytes, criteria: str = ""):
         result.criteria = criteria
         result.id = id
         result.sender = get_email_from_message(msg)
+        result.date = get_date_from_message(msg)
         result.subject = get_subject(msg)
         result.body, result.files = get_body(msg)
         if result.files:
@@ -158,7 +160,7 @@ def get_body_text(part) -> str:
         contents = payload
     soup = BeautifulSoup(contents, "html.parser")
     text = re.sub(r"(\n)+", r"\n", soup.text)
-    return text.replace("\n", " ")
+    return text
 
 
 def get_file_name(part):

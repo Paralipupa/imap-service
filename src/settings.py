@@ -147,7 +147,7 @@ LOGGING = {
             "warning",
             "debug",
             "error",
-            "json",
+            # "json",
         ],
     },
 }

@@ -1,18 +1,24 @@
 import re
 import hashlib
+import datetime
+import logging
 import json_fix
 from typing import Any
+
+logger = logging.getLogger(__name__)
 
 
 class Result:
     def __init__(self, criteria: str = "", error_message: str = ""):
-        patt = r"(?:(?:[0-9а-яё:\/])*\s*){0,3}"
+        patt = r'["0-9а-яёА-ЯЁ:\\\/\s-]'
         self.criteria = criteria
         self.compile: re.compile = re.compile(
-            patt + self.criteria + patt, re.IGNORECASE
+            patt + "*?" + "(?:" + self.criteria.replace(",", "|") + ")" + patt + "*",
+            re.I,
         )
         self.id: bytes = b"0"
         self.subject: str = ""
+        self.date = None
         self.body: str = error_message
         self.sender: str = ""
         self.files: list = []
@@ -31,10 +37,17 @@ class Result:
         )
 
     def __json__(self):
-        return {
-            "id": self.id.decode("utf-8"),
-            "sender": self.sender,
-            "subject": self.subject,
-            "body": self.find_in_body()[0] if self.find_in_body() else "",
-            "files": self.files,
-        }
+        try:
+            data = {
+                "id": self.id.decode("utf-8"),
+                "sender": self.sender,
+                "subject": self.subject,
+                "date": datetime.datetime(*self.date[:6]),
+                "body": self.find_in_body()[0] if self.find_in_body() else "",
+                "files": self.files,
+            }
+        except Exception as ex:
+            logger.error(f"{ex}")
+            raise
+
+        return data

@@ -41,9 +41,8 @@ def fetch_messages(id):
                 "results.html", paginat=paginat, url=request.host_url
             )
     except Exception as ex:
-        logger.error(f"{ex}")
         api.fetch_messages.cache_clear()
-        return Response(f"error: {ex}", status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        abort(status.HTTP_500_INTERNAL_SERVER_ERROR, **dict(message=f"{ex}"))
 
 
 @app.route("/mail/<int:id>/attachments", defaults={"attach": "0"})
@@ -69,18 +68,21 @@ def fetch_attachments(id: int, attach: str):
                 f"Файл '{os.path.basename(file_name)}' не найден.\n",
                 status=status.HTTP_404_NOT_FOUND,
             )
-    return Response("file not found ", status=status.HTTP_404_NOT_FOUND)
+    abort(status.HTTP_404_NOT_FOUND, **dict(message="file not found "))
 
 
 ### Обработка ошибок запросов ###################################################
 def get_error_response(error, code, message, **kwargs):
-    logger.error("%s: error: %s \n %s", "not_found", error, kwargs)
+    error_message = (
+        (error.data.get("message") if hasattr(error, "data") else None)
+        or kwargs.get("message")
+        or message
+    )
+    logger.error("%s: error: %s ", code, error_message)
     response = make_response(
         {
             "result": "error",
-            "error": (error.data.get("message") if hasattr(error, "data") else None)
-            or kwargs.get("message")
-            or message,
+            "error": error_message,
         },
         code,
     )
