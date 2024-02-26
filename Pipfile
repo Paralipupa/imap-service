@@ -20,6 +20,8 @@ requests = "*"
 python-json-logger = "==2.0.7"
 flask-httpauth = "*"
 pyjwt = "*"
+flasgger = "*"
+setuptools = "*"
 
 [dev-packages]
 

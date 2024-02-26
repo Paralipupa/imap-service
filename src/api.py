@@ -7,16 +7,16 @@ from functools import lru_cache
 #     fetch_attachments as f_attachments,
 # )
 
-from .emessage_thread import (
+from src.emessage_thread import (
     fetch_messages as f_messages,
     fetch_message as f_message,
     fetch_attachments as f_attachments,
 )
 from flask_api import status
-from .helpers import serialize
-from .result import Result
+from src.helpers import serialize
+from src.result import Result
 from src import app
-from .exceptions import *
+from src.exceptions import *
 
 logger = logging.getLogger(__name__)
 
