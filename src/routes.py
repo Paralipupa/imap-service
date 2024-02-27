@@ -1,6 +1,7 @@
 import os, re, time, logging
 from shutil import rmtree
 from werkzeug.routing import Rule
+from flasgger import swag_from
 from flask import (
     Response,
     request,
@@ -18,12 +19,13 @@ logger = logging.getLogger(__name__)
 
 
 @app.route("/mail", defaults={"id": None})
-@app.route("/mail/<int:id>", methods=["GET"])
+@app.route("/mail/<int:id>", endpoint="mail_with_id", methods=["GET"])
 @multi_auth.login_required()
+@swag_from("../docs/mail.yml", endpoint="mail_with_id")
 def fetch_messages(id):
     """получить список писем по вхождению ИНН или ОГРН в
     заголовке и тексте писем.
-    Если указан идентификатор письма то получаем только
+    Если указан идентификатор письма (id), то получаем только
     это письмо.
     """
     param, param_page = __get_param(id=id)
@@ -46,8 +48,13 @@ def fetch_messages(id):
 
 
 @app.route("/mail/<int:id>/attachments", defaults={"attach": "0"})
-@app.route("/mail/<int:id>/attachments/<string:attach>", methods=["GET"])
+@app.route(
+    "/mail/<int:id>/attachments/<string:attach>",
+    endpoint="attach_with_id",
+    methods=["GET"],
+)
 @multi_auth.login_required()
+@swag_from("../docs/attachments.yml", endpoint="attach_with_id")
 def fetch_attachments(id: int, attach: str):
     """получить вложения по идентификатору письма
     и идентификатору файла. Если нет идент.файла,

@@ -14,6 +14,11 @@ default:
   DEBUG_LOG_FILENAME: debug.log
   WARNING_LOG_FILENAME: warning.log
   ERROR_LOG_FILENAME: error.log
-  ENCONING: windows-1251
-  
+  ENCONING: windows-1251  
+  SWAGGER:
+    title: imap-service
+    openapi: 3.0.2
+    uiversion: 3
+    doc_dir: ./docs/
+    specs_route: /swagger/
 
