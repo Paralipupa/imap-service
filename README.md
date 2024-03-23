@@ -1,32 +1,107 @@
 # imap-service
-Сервис получения электронных писем по протоколу IMAP
+Сервис получения электронных писем по протоколу IMAP<br/>
 
-## Description
-Осуществляет поиск писем с вложениями по заданным параметрам ИНН и/или ОГРН
-Выдает список писем, в которых найдены ИНН или ОГРН в заголовке или теле письма
+## Описание
+Осуществляет поиск писем с вложениями по заданным параметрам ИНН и/или ОГРН<br/>
+Выдает список писем, в которых найдены ИНН или ОГРН в заголовке или теле письма<br/>
 
-## Installation
+## Установка
 
-git clone git@gitlab.com:qqube/imap-service
-cd imap-service
-pipenv install --dev
-pipenv shell
+git clone git@gitlab.com:qqube/imap-service<br/>
+cd imap-service<br/>
+pipenv install --dev<br/>
+pipenv shell<br/>
 
-docker-compose -f build/docker-compose.yml up -d
-## Usage
+docker-compose -f build/docker-compose.yml up -d<br/>
 
-http://localhost:5000/swagger/
+## Документация
 
-В заголовочной части запроса обязательно указывать jwt token:
-headers = {'Authorization': Bearer <access_token>}
+http://localhost:5000/swagger/<br/>
 
-параметры page (по умолчанию=1) и page_size(50) не обязательны
 
-Для проверки авторизации должен обязательно присутствовать один из 
-параметров inn или ogrn, либо оба параметра.
+## Использование
 
-1. http://localhost:5000/mail?inn=1234567890&ogrn=&page=1&page_size=50
-Result:
+В заголовочной части запросов обязательно указывать jwt token:<br/>
+headers = {'Authorization': Bearer <access_token>}<br/>
+Для проверки авторизации должен обязательно присутствовать один из <br/>
+параметров inn или ogrn, либо оба параметра.<br/>
+##
+http://localhost:5000/mail<br/>
+
+Параметры:<br/>
+
+<lu>
+<li>inn = ИНН </li>
+<li>ogrn = ОГРН</li>
+<li>page = номер страницы (по-умолчанию 1)</li>
+<li>page_size = количество записей на одной странице (по-умолчанию 50)</li>
+</ul><br/>
+  
+
+Возвращает:
+
+Список писем в заголовке или теле которых присутствует заданные ИНН или ОГРН
+
+##
+http://localhost:5000/mail/[id]/<br/>
+
+<b>id</b> - цифровой идентификатор письма<br/>
+
+Параметры:<br/>
+
+<lu>
+<li>inn = ИНН </li>
+<li>ogrn = ОГРН</li>
+<li>page = номер страницы (по-умолчанию 1)</li>
+<li>page_size = количество записей на одной странице (по-умолчанию 50)</li>
+</ul><br/>
+
+Возвращает:
+
+Данные письма с идентификатором равным <b>id</b>
+##
+3. http://localhost:5000/mail/[id]/attachments/<br/>
+
+<b>id</b> - цифровой идентификатор письма<br/>
+
+Параметры:<br/>
+
+<lu>
+<li>inn = ИНН </li>
+<li>ogrn = ОГРН</li>
+</ul><br/>
+
+Возвращает:<br/>
+
+Файлы, прикрепленные к письму в виде zip-архива.
+
+##
+
+4. http://localhost:5000/mail/[id]/attachments/[id_attach]/<br/>
+
+<b>id</b> - цифровой идентификатор письма<br/>
+<b>id_attach</b> - строковый идентификатор файла в письме<br/>
+
+Параметры:<br/>
+
+<lu>
+<li>inn = ИНН </li>
+<li>ogrn = ОГРН</li>
+</ul><br/>
+
+Возвращает:<br/>
+
+Файл, прикрепленные к письму, соответствующий идентификатору <b>id_attach</b>
+
+
+##
+
+Примеры:
+1. http://localhost:5000/mail?inn=1234567890&ogrn=&page=1&page_size=50<br/>
+
+Результат:<br/>
+
+<pre>
 {
     "count": 1,
     "current": "http://localhost:5000/mail?inn=1234567890",
@@ -38,6 +113,7 @@ Result:
     "previous": "",
     "results": [
                     {
+                        "id": "20",
                         "body": "",
                         "date": "Sat, 10 Feb 2024 12:04:18 GMT",
                         "files": [
@@ -57,28 +133,4 @@ Result:
                     ....
                 ]
 }
-
-2. http://localhost:5000/mail/19/?inn=1234567890&ogrn=&page=1&page_size=50
-Result:
-    Возвращает  в блоке 'results' письмо с идентификаторм 19
-
-3. http://localhost:5000/mail/19/attachments/?inn=1234567890&ogrn=
-Result:
-    Возвращает архив с вложенными файла из письма с идент.=19
-
-4. http://localhost:5000/mail/19/attachments/8dfa0771/?inn=1234567890&ogrn=
-Result:
-    Возвращает файл с идентификатором=8dfa0771 из письма с идент.=19
-
-## Support
-
-## Roadmap
-
-## Contributing
-
-
-## Authors and acknowledgment
-
-## License
-
-## Project status
+</pre>
