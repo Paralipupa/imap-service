@@ -194,7 +194,8 @@ def __get_pagination(data: list, url, **param):
     paginat["ogrn"] = param["ogrn"]
     paginat["page"] = page_num
     paginat["page_size"] = page_size
-    paginat["count"] = max_pages
+    paginat["page_count"] = max_pages
+    paginat["count"] = count
     if page_num == 1:
         paginat["previous"] = ""
     else:
