@@ -19,6 +19,11 @@ class DataIsNotFound(Exception):
         self._message = f"Не удалось выполнить поиск писем. {message}"
         super(DataIsNotFound, self).__init__(self._message)
 
+class InboxIsNotSelected(Exception):
+    def __init__(self, message: str = ""):
+        self._message = f"Не удалось открыть папку INBOX. {message}"
+        super(InboxIsNotSelected, self).__init__(self._message)
+
 class ConnectionErrorException(Exception):
     def __init__(self, name:str=""):
         self._message = "Ошибка соединения с сервером {}".format(name)

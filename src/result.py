@@ -43,7 +43,8 @@ class Result:
                 "sender": self.sender,
                 "subject": self.subject,
                 "date": datetime.datetime(*self.date[:6]),
-                "body": self.find_in_body()[0] if self.find_in_body() else "",
+                "body": self.body,
+                # "body": self.find_in_body()[0] if self.find_in_body() else "",
                 "files": self.files,
             }
         except Exception as ex:
