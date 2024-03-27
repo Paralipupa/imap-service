@@ -35,8 +35,11 @@ def connect():
             timeout=30,
         )
         imap.login(app.config.IMAP_SERVER.user, app.config.IMAP_SERVER.password)
-        imap.select("Inbox")
-        return imap
+        status, _ = imap.select("Inbox")
+        if status == "OK":
+            return imap
+        else:
+            raise InboxIsNotSelected("")
     except Exception as ex:
         logger.error(f"{ex}")
         raise ConnectionErrorException(ex)
