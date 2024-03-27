@@ -14,6 +14,11 @@ class DataIsNotDefined(Exception):
         self._message = "Данные не определены"
         super(DataIsNotDefined, self).__init__(self._message)
 
+class DataIsNotFound(Exception):
+    def __init__(self, message: str = ""):
+        self._message = f"Не удалось выполнить поиск писем. {message}"
+        super(DataIsNotFound, self).__init__(self._message)
+
 class ConnectionErrorException(Exception):
     def __init__(self, name:str=""):
         self._message = "Ошибка соединения с сервером {}".format(name)

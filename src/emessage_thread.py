@@ -52,16 +52,22 @@ def get_imap():
 
 def disconnect():
     imap = get_imap()
+    imap.close()
     imap.logout()
 
 
 def get_message(id: bytes):
+    error_message = ""
     try:
         imap = get_imap()
         status = ""
         status, data = imap.uid("fetch", id.decode(), "(RFC822)")
     except Exception as ex:
-        logger.error(f"{ex}")
+        error_message = f"{ex}"
+        logger.error(f"{error_message}")
+        status = "FAIL"
+    finally:
+        disconnect()
     if status == "OK":
         try:
             if len(data) > 1:
@@ -70,6 +76,9 @@ def get_message(id: bytes):
                 return None
         except Exception as ex:
             logger.error(f"{ex}")
+    else:
+        raise DataIsNotFound(error_message)
+        
     return None
 
 
@@ -78,6 +87,7 @@ def search_messages(criteria) -> Any:
     по вхождению строки (criteria) в заголовке и теле письма
     если критерий поиска несколько, то ищется по любому их них
     """
+    error_message = ""
     imap = get_imap()
     status = ""
     date_begin = (datetime.datetime.now() - datetime.timedelta(days=365)).strftime(
@@ -96,12 +106,15 @@ def search_messages(criteria) -> Any:
             "search", "charset", "utf-8", " ".join(args).encode("utf-8")
         )
     except Exception as ex:
-        logger.error(f"{ex}")
+        error_message = f"{ex}"
+        logger.error(f"{error_message}")
         status = "FAIL"
+    finally:
+        disconnect()
     if status == "OK":
         return data
     else:
-        return None
+        raise DataIsNotFound(error_message)
 
 
 def get_message_data(id: bytes, criteria: str = ""):
@@ -231,26 +244,21 @@ def fetch_messages(criteria: str):
             }
 
             for future in concurrent.futures.as_completed(future_to_url):
-                url = future_to_url[future]
                 try:
                     result = future.result()
                     results.append(result)
                 except Exception as ex:
                     results.append(Result(error_message=f"{ex}"))
-
-    disconnect()
     return [x for x in results if x] if results else []
 
 
 def fetch_message(id: bytes):
     result = get_message_data(id)
-    disconnect()
     return [result]
 
 
 def fetch_attachments(id: str, att_id: str = ""):
     msg = get_message(id)
-    disconnect()
     if msg:
         return extract_attachments(msg, att_id)
     return None

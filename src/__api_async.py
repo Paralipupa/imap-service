@@ -2,7 +2,7 @@
 import asyncio
 import logging
 from functools import lru_cache
-from .emessage_async import (
+from .__emessage_async import (
     fetch_messages_async,
     fetch_message_async,
     fetch_attachments_async,
