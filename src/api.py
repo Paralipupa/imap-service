@@ -21,7 +21,7 @@ from src.exceptions import *
 logger = logging.getLogger(__name__)
 
 
-@lru_cache(maxsize=32, typed=False)
+# @lru_cache(maxsize=32, typed=False)
 def fetch_messages(**param):
     """Получить список писем по ИНН или ОГРН
     ИНН или ОГРН ищутся в теле и заголовке писем

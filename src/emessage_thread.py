@@ -34,15 +34,22 @@ def connect():
             port=app.config.IMAP_SERVER.port,
             timeout=30,
         )
-        imap.login(app.config.IMAP_SERVER.user, app.config.IMAP_SERVER.password)
-        status, _ = imap.select("Inbox")
-        if status == "OK":
-            return imap
-        else:
-            raise InboxIsNotSelected("")
     except Exception as ex:
         logger.error(f"{ex}")
         raise ConnectionErrorException(ex)
+
+    try:
+        imap.login(app.config.IMAP_SERVER.user, app.config.IMAP_SERVER.password)
+    except Exception as ex:
+        logger.error(f"{ex}")
+        raise AccessDeniedException(ex)
+
+    status, _ = imap.select("INBOX")
+    if status == "OK":
+        return imap
+    else:
+        imap.logout()
+        raise InboxIsNotSelected("")
 
 
 def get_imap():
@@ -53,24 +60,25 @@ def get_imap():
     return imap
 
 
-def disconnect():
-    imap = get_imap()
-    imap.close()
-    imap.logout()
+def disconnect(imap):
+    try:
+        imap.close()
+    finally:
+        imap.logout()
 
 
 def get_message(id: bytes):
     error_message = ""
+    imap = get_imap()
+    status = ""
     try:
-        imap = get_imap()
-        status = ""
         status, data = imap.uid("fetch", id.decode(), "(RFC822)")
     except Exception as ex:
         error_message = f"{ex}"
         logger.error(f"{error_message}")
         status = "FAIL"
     finally:
-        disconnect()
+        disconnect(imap)
     if status == "OK":
         try:
             if len(data) > 1:
@@ -81,7 +89,7 @@ def get_message(id: bytes):
             logger.error(f"{ex}")
     else:
         raise DataIsNotFound(error_message)
-        
+
     return None
 
 
@@ -113,7 +121,7 @@ def search_messages(criteria) -> Any:
         logger.error(f"{error_message}")
         status = "FAIL"
     finally:
-        disconnect()
+        disconnect(imap)
     if status == "OK":
         return data
     else:
