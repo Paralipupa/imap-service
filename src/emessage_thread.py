@@ -24,8 +24,6 @@ from .exceptions import *
 warnings.filterwarnings("ignore", category=MarkupResemblesLocatorWarning)
 logger = logging.getLogger(__name__)
 
-local = threading.local()
-
 
 def connect():
     try:
@@ -53,11 +51,7 @@ def connect():
 
 
 def get_imap():
-    try:
-        imap = local.imap
-    except AttributeError:
-        imap = local.imap = connect()
-    return imap
+    return connect()
 
 
 def disconnect(imap):
@@ -153,6 +147,7 @@ def get_subject(msg) -> str:
                 subject = subject.decode()
     except Exception as ex:
         logger.warning(f"{ex}")
+        pass
     finally:
         return subject
 
@@ -194,6 +189,7 @@ def get_file_name(part):
             filename = filename.decode()
     except Exception as ex:
         logger.error(f"{ex}")
+        pass
     return filename
 
 
