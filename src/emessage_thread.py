@@ -21,6 +21,7 @@ from .helpers import (
 from src import app
 from .exceptions import *
 
+lock = threading.Lock()
 warnings.filterwarnings("ignore", category=MarkupResemblesLocatorWarning)
 logger = logging.getLogger(__name__)
 
@@ -107,8 +108,9 @@ def search_messages(criteria) -> Any:
         args.append("TEXT")
         args.append(cr)
     try:
+        criteria_text = " ".join(args).encode("utf-8")
         status, data = imap.uid(
-            "search", "charset", "utf-8", " ".join(args).encode("utf-8")
+            "search", "charset", "utf-8", criteria_text
         )
     except Exception as ex:
         error_message = f"{ex}"
@@ -125,13 +127,18 @@ def search_messages(criteria) -> Any:
 def get_message_data(id: bytes, criteria: str = ""):
     msg = get_message(id=id)
     if msg:
-        result = Result(criteria=criteria)
-        result.criteria = criteria
-        result.id = id
-        result.sender = get_email_from_message(msg)
-        result.date = get_date_from_message(msg)
-        result.subject = get_subject(msg)
-        result.body, result.files = get_body(msg)
+        lock.acquire()
+        try:
+            result = Result(criteria=criteria)
+            result.criteria = criteria
+            result.id = id
+            result.sender = get_email_from_message(msg)
+            result.date = get_date_from_message(msg)
+            result.subject = get_subject(msg)
+            result.body, result.files = get_body(msg)
+        finally:
+            lock.release()
+            
         if result.files:
             return result
     return None
@@ -202,12 +209,12 @@ def get_body(msg) -> Tuple[str, list]:
     text = ""
     files = []
     for part in msg.walk():
-        if part.get_content_maintype() == "text":
-            text = get_body_text(part)
-        elif part.get_content_disposition() == "attachment":
+        if part.get_content_disposition() == "attachment":
             filename = get_file_name(part)
             if filename:
                 files.append({"id": Result.hashit(filename), "name": filename})
+        elif part.get_content_maintype() == "text":
+            text = get_body_text(part)
     return text, files
 
 

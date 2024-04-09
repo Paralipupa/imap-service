@@ -10,19 +10,24 @@ logger = logging.getLogger(__name__)
 
 class Result:
     def __init__(self, criteria: str = "", error_message: str = ""):
-        patt = r'["0-9а-яёА-ЯЁ:\\\/\s-]'
-        self.criteria = criteria
-        self.compile: re.compile = re.compile(
-            patt + "*?" + "(?:" + self.criteria.replace(",", "|") + ")" + patt + "*",
-            re.I,
-        )
-        self.id: bytes = b"0"
-        self.subject: str = ""
-        self.date = None
-        self.body: str = error_message
-        self.sender: str = ""
-        self.files: list = []
-        self.error: str = error_message
+        try:
+            patt = r'["0-9а-яёА-ЯЁ:\\\/\s-]'
+            self.criteria = criteria
+            self.compile: re.compile = re.compile(
+                patt + "*?" + "(?:" + self.criteria.replace(",", "|") + ")" + patt + "*",
+                re.I,
+            )
+            self.id: bytes = b"0"
+            self.subject: str = ""
+            self.date = None
+            self.body: str = error_message
+            self.sender: str = ""
+            self.files: list = []
+            self.error: str = error_message
+        except Exception as ex:
+            logger.error(f"{ex}")
+            raise
+
 
     @classmethod
     def hashit(cls, s):
