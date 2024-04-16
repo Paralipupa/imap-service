@@ -26,7 +26,7 @@ warnings.filterwarnings("ignore", category=MarkupResemblesLocatorWarning)
 logger = logging.getLogger(__name__)
 
 
-def connect():
+def connect(folder: str):
     try:
         imap = imaplib.IMAP4_SSL(
             host=app.config.IMAP_SERVER.host,
@@ -43,16 +43,12 @@ def connect():
         logger.error(f"{ex}")
         raise AccessDeniedException(ex)
 
-    status, _ = imap.select("INBOX")
+    status, _ = imap.select(folder)
     if status == "OK":
         return imap
     else:
         imap.logout()
         raise InboxIsNotSelected("")
-
-
-def get_imap():
-    return connect()
 
 
 def disconnect(imap):
@@ -62,9 +58,9 @@ def disconnect(imap):
         imap.logout()
 
 
-def get_message(id: bytes):
+def get_message(id: bytes, folder:str):
     error_message = ""
-    imap = get_imap()
+    imap = connect(folder)
     status = ""
     try:
         status, data = imap.uid("fetch", id.decode(), "(RFC822)")
@@ -88,13 +84,13 @@ def get_message(id: bytes):
     return None
 
 
-def search_messages(criteria) -> Any:
+def search_messages(criteria, folder:str) -> Any:
     """Поиск писем не ранее 1 года
     по вхождению строки (criteria) в заголовке и теле письма
     если критерий поиска несколько, то ищется по любому их них
     """
     error_message = ""
-    imap = get_imap()
+    imap = connect(folder)
     status = ""
     date_begin = (datetime.datetime.now() - datetime.timedelta(days=365)).strftime(
         "%d-%b-%Y"
@@ -109,9 +105,7 @@ def search_messages(criteria) -> Any:
         args.append(cr)
     try:
         criteria_text = " ".join(args).encode("utf-8")
-        status, data = imap.uid(
-            "search", "charset", "utf-8", criteria_text
-        )
+        status, data = imap.uid("search", "charset", "utf-8", criteria_text)
     except Exception as ex:
         error_message = f"{ex}"
         logger.error(f"{error_message}")
@@ -124,8 +118,8 @@ def search_messages(criteria) -> Any:
         raise DataIsNotFound(error_message)
 
 
-def get_message_data(id: bytes, criteria: str = ""):
-    msg = get_message(id=id)
+def get_message_data(id: bytes, folder:str, criteria: str = ""):
+    msg = get_message(id, folder)
     if msg:
         lock.acquire()
         try:
@@ -138,7 +132,7 @@ def get_message_data(id: bytes, criteria: str = ""):
             result.body, result.files = get_body(msg)
         finally:
             lock.release()
-            
+
         if result.files:
             return result
     return None
@@ -247,34 +241,40 @@ def extract_attachments(msg, att_ids):
 
 
 # --------------------------------------------------------------------------
-def fetch_messages(criteria: str):
+def fetch_messages(criteria: str, folders):
     results = []
-    data = search_messages(criteria)
-    if data:
-        with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
-            future_to_url = {
-                executor.submit(get_message_data, id, criteria): id
-                for id in data[0].split()
-            }
+    for folder in folders:
+        data = search_messages(criteria, folder)
+        if data:
+            with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
+                future_to_url = {
+                    executor.submit(get_message_data, id, folder, criteria): id
+                    for id in data[0].split()
+                }
 
-            for future in concurrent.futures.as_completed(future_to_url):
-                try:
-                    result = future.result()
-                    results.append(result)
-                except Exception as ex:
-                    results.append(Result(error_message=f"{ex}"))
+                for future in concurrent.futures.as_completed(future_to_url):
+                    try:
+                        result = future.result()
+                        results.append(result)
+                    except Exception as ex:
+                        results.append(Result(error_message=f"{ex}"))
     return [x for x in results if x] if results else []
 
 
-def fetch_message(id: bytes):
-    result = get_message_data(id)
-    return [result]
+def fetch_message(id: bytes, folders:set):
+    results = list()
+    for folder in folders:
+        result = get_message_data(id, folder)
+        if result:
+            results.append(result)
+    return results
 
 
-def fetch_attachments(id: str, att_id: str = ""):
-    msg = get_message(id)
-    if msg:
-        return extract_attachments(msg, att_id)
+def fetch_attachments(id: str, folders:set, att_id: str = ""):
+    for folder in folders:
+        msg = get_message(id, folder)
+        if msg:
+            return extract_attachments(msg, att_id)
     return None
 
 

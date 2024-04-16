@@ -134,6 +134,9 @@ def __get_param(id=None, attach=None):
     param["attach"] = attach
     param["inn"] = request.args.get("inn")
     param["ogrn"] = request.args.get("ogrn")
+    param["path"] = set([app.config.INPUT_DIR])
+    if request.args.get("path"):
+        param["path"] |= set(request.args.get("path").split(","))
     param_page = {}
     # возвращает только json
     param_page["json"] = request.args.get("json_only", "yes")

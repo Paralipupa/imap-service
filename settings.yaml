@@ -9,6 +9,7 @@ default:
   PAGINATOR:
     PageSize: 50
   LOG_DIR: log
+  INPUT_DIR: Inbox
   OUTPUT_DIR: download
   INFO_LOG_FILENAME: app.log
   DEBUG_LOG_FILENAME: debug.log

@@ -32,12 +32,12 @@ def fetch_messages(**param):
         id = param.get("id")
         if id:
             id = bytes(str(id), "utf-8")
-            results = f_message(id)
+            results = f_message(id, param["path"])
         else:
             search_text = param.get("inn") if param.get("inn") else ""
             search_text += "," if param.get("inn") and param.get("ogrn") else ""
             search_text += param.get("ogrn") if param.get("ogrn") else ""
-            results = f_messages(search_text)
+            results = f_messages(search_text, param["path"])
         return results
     except ConnectionErrorException as ex:
         return Result(error_message=f"{ex}")
@@ -56,7 +56,7 @@ def fetch_attachments(**param):
             id = bytes(str(id), "utf-8")
             attachments = param.get("attach")
             if attachments:
-                results = f_attachments(id, attachments)
+                results = f_attachments(id, param["path"], attachments)
                 return results
     except ConnectionErrorException as ex:
         return Result(error_message=f"{ex}")
