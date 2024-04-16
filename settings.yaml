@@ -8,8 +8,8 @@ default:
   JWT_VERIFY_SIGNATURE: True
   PAGINATOR:
     PageSize: 50
+  DEFAULT_MAIL_FOLDERS: Inbox
   LOG_DIR: log
-  INPUT_DIR: Inbox
   OUTPUT_DIR: download
   INFO_LOG_FILENAME: app.log
   DEBUG_LOG_FILENAME: debug.log

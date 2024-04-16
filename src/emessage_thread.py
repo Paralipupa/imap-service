@@ -47,8 +47,14 @@ def connect(folder: str):
     if status == "OK":
         return imap
     else:
-        imap.logout()
-        raise InboxIsNotSelected("")
+        try:
+            status, folders = imap.list()
+            if folders:
+                folders = "".join([x.decode("utf-8") for x in folders]).strip("'")+"("
+                folders = ",".join( re.findall(r"(?<=\s)[A-Za-zА-Яа-я-\s]{2,}(?=\()", folders))
+        finally:
+            imap.logout()
+            raise InboxIsNotSelected(f"{folder}. Список доступных папок: {folders}")
 
 
 def disconnect(imap):
@@ -125,6 +131,7 @@ def get_message_data(id: bytes, folder:str, criteria: str = ""):
         try:
             result = Result(criteria=criteria)
             result.criteria = criteria
+            result.path = folder
             result.id = id
             result.sender = get_email_from_message(msg)
             result.date = get_date_from_message(msg)
@@ -249,7 +256,7 @@ def fetch_messages(criteria: str, folders):
             with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
                 future_to_url = {
                     executor.submit(get_message_data, id, folder, criteria): id
-                    for id in data[0].split()
+                    for id in data[0].split()[:100]
                 }
 
                 for future in concurrent.futures.as_completed(future_to_url):

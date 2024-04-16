@@ -23,6 +23,7 @@ class Result:
             self.body: str = error_message
             self.sender: str = ""
             self.files: list = []
+            self.path: str = ""
             self.error: str = error_message
         except Exception as ex:
             logger.error(f"{ex}")
@@ -49,7 +50,7 @@ class Result:
                 "subject": self.subject,
                 "date": datetime.datetime(*self.date[:6]),
                 "body": self.body,
-                # "body": self.find_in_body()[0] if self.find_in_body() else "",
+                "path": self.path,
                 "files": self.files,
             }
         except Exception as ex:

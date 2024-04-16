@@ -21,7 +21,7 @@ class DataIsNotFound(Exception):
 
 class InboxIsNotSelected(Exception):
     def __init__(self, message: str = ""):
-        self._message = f"Не удалось открыть папку {message}"
+        self._message = f"Не найдена папка {message}"
         super(InboxIsNotSelected, self).__init__(self._message)
 
 class ConnectionErrorException(Exception):

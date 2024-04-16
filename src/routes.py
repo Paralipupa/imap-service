@@ -134,9 +134,11 @@ def __get_param(id=None, attach=None):
     param["attach"] = attach
     param["inn"] = request.args.get("inn")
     param["ogrn"] = request.args.get("ogrn")
-    param["path"] = set([app.config.INPUT_DIR])
+    param["path"] = set()
+    if (request.args.get("path") is None or not "!" in request.args.get("path")) and app.config.get("DEFAULT_MAIL_FOLDERS"):
+        param["path"] = set(app.config.DEFAULT_MAIL_FOLDERS.split(","))
     if request.args.get("path"):
-        param["path"] |= set(request.args.get("path").split(","))
+        param["path"] |= set([x.lstrip("!") for x in request.args.get("path").split(",")])
     param_page = {}
     # возвращает только json
     param_page["json"] = request.args.get("json_only", "yes")
