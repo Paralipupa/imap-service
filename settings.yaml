@@ -17,6 +17,7 @@ default:
   ERROR_LOG_FILENAME: error.log
   ENCONING: windows-1251  
   JSON_AS_ASCII: False
+  DOCVIEWER_API: "https://docviewer.sm-rso.qqube.ru"
   SWAGGER:
     title: imap-service
     openapi: 3.0.2

@@ -34,6 +34,7 @@ def verify_token(token):
     result = {
         "ogrn": data.get("ogrn"),
         "inn": data.get("inn"),
+        "token": token,
         "error": error_message,
     }
     return result
