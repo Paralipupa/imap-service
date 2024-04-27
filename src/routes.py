@@ -63,7 +63,7 @@ def fetch_attachments(id: int, attach: str):
     """получить вложения по идентификатору письма
     и идентификатору файла. Если нет идент.файла,
     то скачиваются все файлы из письма в виде архива
-    если указан параметр mode=a, то файл отправляется на сервер s3
+    если указан параметр mode=a|w, то файл отправляется на сервер s3
     """
     param, _ = __get_param(id=id, attach=attach)
     data = multi_auth.current_user()
@@ -74,8 +74,8 @@ def fetch_attachments(id: int, attach: str):
         try:
             if os.path.exists(filename):
                 response = __download_file(filename)
-                if param.get("mode") and param["mode"] == "a":
-                    return __upload_file_to_s3(id, filename, data)
+                if param.get("mode") and param["mode"] in "a|w":
+                    return __upload_file_to_s3(id, filename, data, param["mode"])
                 else:
                     return response
             else:
@@ -285,16 +285,18 @@ def __read_file(filename):
         return file.read()
 
 
-def __upload_file_to_s3(id: int, filename: str, data: dict):
+def __upload_file_to_s3(id: int, filename: str, data: dict, mode:str):
     """Загрузка файла на сервер s3"""
     try:
+        result = None
         headers = {"Authorization": f"Bearer {data['token']}"}
-        params = {"mode": "a", "path": Result.hashit(str(id))}
+        params = {"mode": mode, "path": Result.hashit(str(id))}
         url = "{0}/upload/".format(app.config["DOCVIEWER_API"])
         with open(filename, "rb") as f:
             response = requests.post(
                 url, headers=headers, params=params, files={"datafile": f}
             )
+        result = jsonify(response.json())
     except Exception as ex:
         abort(status.HTTP_500_INTERNAL_SERVER_ERROR, **dict(message=f"{ex}"))
-    return jsonify(response.json())
+    return result
