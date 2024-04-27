@@ -153,3 +153,9 @@ LOGGING = {
 }
 
 logconfig.dictConfig(LOGGING)
+
+try:
+    from src import settings_local
+finally:
+    pass
+

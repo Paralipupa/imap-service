@@ -4,4 +4,5 @@ __pycache__/
 log/
 download/
 .secrets.yaml
+settings_local.py
 

@@ -13,8 +13,10 @@ from flask import (
 import requests
 from flask_api import status
 from flask_restful import abort
+from sentry_sdk import capture_exception
+
 from src import app, api
-from .auth import multi_auth
+from src.auth import multi_auth
 from src.result import Result
 
 logger = logging.getLogger(__name__)
@@ -88,6 +90,17 @@ def fetch_attachments(id: int, attach: str):
 
 
 ### Обработка ошибок запросов ###################################################
+@app.route("/sentry-sdk/")
+def hello_world():
+    # Генерируем исключение для тестирования Sentry
+    try:
+        1 / 0  # Генерация ZeroDivisionError
+    except Exception as e:
+        # Отправляем исключение в Sentry
+        capture_exception(e)
+        return "Error captured by Sentry!"
+    return "<p>Hello, World!</p>"
+
 def get_error_response(error, code, message, **kwargs):
     error_message = (
         (error.data.get("message") if hasattr(error, "data") else None)
