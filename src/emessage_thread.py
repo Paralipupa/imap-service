@@ -50,8 +50,10 @@ def connect(folder: str):
         try:
             status, folders = imap.list()
             if folders:
-                folders = "".join([x.decode("utf-8") for x in folders]).strip("'")+"("
-                folders = ",".join( re.findall(r"(?<=\s)[A-Za-zА-Яа-я-\s]{2,}(?=\()", folders))
+                folders = "".join([x.decode("utf-8") for x in folders]).strip("'") + "("
+                folders = ",".join(
+                    re.findall(r"(?<=\s)[A-Za-zА-Яа-я-\s]{2,}(?=\()", folders)
+                )
         finally:
             imap.logout()
             raise InboxIsNotSelected(f"{folder}. Список доступных папок: {folders}")
@@ -64,7 +66,7 @@ def disconnect(imap):
         imap.logout()
 
 
-def get_message(id: bytes, folder:str):
+def get_message(id: bytes, folder: str):
     error_message = ""
     imap = connect(folder)
     status = ""
@@ -90,7 +92,7 @@ def get_message(id: bytes, folder:str):
     return None
 
 
-def search_messages(criteria, folder:str) -> Any:
+def search_messages(criteria, folder: str) -> Any:
     """Поиск писем не ранее 1 года
     по вхождению строки (criteria) в заголовке и теле письма
     если критерий поиска несколько, то ищется по любому их них
@@ -124,7 +126,7 @@ def search_messages(criteria, folder:str) -> Any:
         raise DataIsNotFound(error_message)
 
 
-def get_message_data(id: bytes, folder:str, criteria: str = ""):
+def get_message_data(id: bytes, folder: str, criteria: str = ""):
     msg = get_message(id, folder)
     if msg:
         lock.acquire()
@@ -265,10 +267,14 @@ def fetch_messages(criteria: str, folders):
                         results.append(result)
                     except Exception as ex:
                         results.append(Result(error_message=f"{ex}"))
-    return [x for x in results if x] if results else []
+    return (
+        list(reversed((sorted([x for x in results if x], key=lambda x: x.date))))
+        if results
+        else []
+    )
 
 
-def fetch_message(id: bytes, folders:set):
+def fetch_message(id: bytes, folders: set):
     results = list()
     for folder in folders:
         result = get_message_data(id, folder)
@@ -277,7 +283,7 @@ def fetch_message(id: bytes, folders:set):
     return results
 
 
-def fetch_attachments(id: str, folders:set, att_id: str = ""):
+def fetch_attachments(id: str, folders: set, att_id: str = ""):
     for folder in folders:
         msg = get_message(id, folder)
         if msg:
