@@ -1,17 +1,12 @@
 import logging
 import requests
 from functools import lru_cache
-# from .emessage_process import (
-#     fetch_messages as f_messages,
-#     fetch_message as f_message,
-#     fetch_attachments as f_attachments,
-# )
-
-from src.emessage_thread import (
+from src.emessages import (
     fetch_messages as f_messages,
     fetch_message as f_message,
     fetch_attachments as f_attachments,
 )
+
 from flask_api import status
 from src.helpers import serialize
 from src.result import Result

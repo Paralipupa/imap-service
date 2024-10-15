@@ -29,7 +29,6 @@ class Result:
             logger.error(f"{ex}")
             raise
 
-
     @classmethod
     def hashit(cls, s):
         return hashlib.sha1(s.encode("utf-8")).hexdigest()[:8]
@@ -48,7 +47,7 @@ class Result:
                 "id": self.id.decode("utf-8"),
                 "sender": self.sender,
                 "subject": self.subject,
-                "date": datetime.datetime(*self.date[:6]),
+                "date": self.date.strftime("%Y-%m-%d %H:%M:%S"),
                 "body": self.body,
                 "path": self.path,
                 "files": self.files,

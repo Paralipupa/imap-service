@@ -5,4 +5,5 @@ log/
 download/
 .secrets.yaml
 settings_local.py
+.venv/
 
