@@ -107,8 +107,11 @@ def search_messages(criteria, folder: str) -> Any:
         disconnect(imap)
 
 
+@lru_cache(maxsize=1024)
 def get_message_data(id: bytes, folder: str, criteria: str = ""):
-    """Выборка данных сообщений"""
+    """Выборка данных сообщения"""
+    # Преобразование id (bytes) в строку для кеширования
+    id_str = id.decode("utf-8")
     msg = get_message(id, folder)
     if msg:
         result = Result(criteria=criteria)
