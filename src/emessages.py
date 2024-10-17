@@ -19,13 +19,13 @@ from .helpers import (
     decode_quoted_printable,
 )
 from src import app
+from src.redis_cache import cache
 from .exceptions import *
 
 warnings.filterwarnings("ignore", category=MarkupResemblesLocatorWarning)
 logger = logging.getLogger(__name__)
 
 connection_pool = ThreadPoolExecutor(max_workers=16)
-
 
 def connect(folder: str):
     try:
@@ -107,7 +107,7 @@ def search_messages(criteria, folder: str) -> Any:
         disconnect(imap)
 
 
-@lru_cache(maxsize=1024)
+@cache(expiration_seconds=app.config.REDIS.EXPIRATION_SECONDS)
 def get_message_data(id: bytes, folder: str, criteria: str = ""):
     """Выборка данных сообщения"""
     # Преобразование id (bytes) в строку для кеширования

@@ -23,6 +23,7 @@ pyjwt = "*"
 flasgger = "*"
 setuptools = "*"
 flask-cors = "*"
+redis = "*"
 
 [dev-packages]
 

@@ -24,4 +24,9 @@ default:
     uiversion: 3
     doc_dir: ./docs/
     specs_route: /swagger/
+  REDIS:
+    HOST: localhost
+    PORT: 6379
+    DB: 0
+    EXPIRATION_SECONDS: 2592000 # 30 дней (30 * 24 * 60 * 60)
 

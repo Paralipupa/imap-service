@@ -1,0 +1,9 @@
+FROM redis:7
+
+RUN apt-get update && apt-get install -y nmap
+
+COPY ./check_redis.sh /scripts/check_redis.sh
+
+RUN chmod +x /scripts/check_redis.sh
+
+ENTRYPOINT ["/bin/bash", "/scripts/check_redis.sh"]
